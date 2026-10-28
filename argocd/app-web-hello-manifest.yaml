@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-hello
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/thawatchai-rvc/rancher-gitops.git
+    targetRevision: HEAD
+    path: developments/app-hello-web
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: web-hello
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
