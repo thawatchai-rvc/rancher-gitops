@@ -9,6 +9,7 @@ spec:
 
   rules:
     - host: web-hello.lab.local
+      secretName: lab-tls
       http:
         paths:
           - path: /
