@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-nginx-ingress
+  namespace: development
+
+spec:
+  ingressClassName: traefik
+
+  rules:
+    - host: web-nginx.lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-nginx
+                port:
+                  number: 80
