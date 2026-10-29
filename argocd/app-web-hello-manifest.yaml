@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/thawatchai-rvc/rancher-gitops.git
     targetRevision: HEAD
-    path: developments/app-hello-web
+    path: developments/app-web-hello
   destination:
     server: https://kubernetes.default.svc
     namespace: web-hello

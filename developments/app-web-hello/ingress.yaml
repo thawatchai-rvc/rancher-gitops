@@ -8,13 +8,13 @@ spec:
   ingressClassName: traefik
 
   rules:
-    - host: hello-web.lab.local
+    - host: web-hello.lab.local
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: hello-web
+                name: web-hello
                 port:
                   number: 80
