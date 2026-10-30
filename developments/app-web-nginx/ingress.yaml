@@ -6,10 +6,13 @@ metadata:
 
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - web-nginx.lab.local
+      secretName: lab-tls
 
   rules:
     - host: web-nginx.lab.local
-      secretName: lab-tls
       http:
         paths:
           - path: /
