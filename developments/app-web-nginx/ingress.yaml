@@ -19,4 +19,4 @@ spec:
                 name: web-nginx
                 port:
                   number: 80
-      secretName: lab-tls
+     
