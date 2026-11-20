@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graylog
+  namespace: graylog
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: graylog
+  template:
+    metadata:
+      labels:
+        app: graylog
+    spec:
+      securityContext:
+        fsGroup: 1100
+      initContainers:
+        - name: wait-for-mongodb
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z mongodb 27017; do sleep 5; done"]
+        - name: wait-for-opensearch
+          image: busybox:1.36
+          command: ["sh", "-c", "until wget -q -O /dev/null http://opensearch:9200; do sleep 5; done"]
+      containers:
+        - name: graylog
+          image: graylog/graylog:7.1
+          ports:
+            - name: web
+              containerPort: 9000
+            - name: syslog-tcp
+              containerPort: 1514
+          envFrom:
+            - configMapRef:
+                name: graylog-config
+            - secretRef:
+                name: graylog-auth
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: journal
+              mountPath: /usr/share/graylog/data/journal
+      volumes:
+        - name: journal
+          persistentVolumeClaim:
+            claimName: graylog-journal
