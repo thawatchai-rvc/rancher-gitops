@@ -51,7 +51,7 @@ spec:
                 - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
           livenessProbe:
@@ -60,7 +60,7 @@ spec:
                 - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 30
             failureThreshold: 3
   volumeClaimTemplates:
