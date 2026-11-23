@@ -30,11 +30,27 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+      initContainers:
+        - name: sysctl
+          image: busybox:1.36
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
       containers:
         - name: opensearch
           image: opensearchproject/opensearch:2.19.0
           ports:
-            - containerPort: 9200
+            - name: http
+              containerPort: 9200
+            - name: transport
+              containerPort: 9300
           env:
             - name: discovery.type
               value: single-node
@@ -49,7 +65,22 @@ spec:
               cpu: 500m
               memory: 2Gi
             limits:
+              cpu: 2000m
               memory: 3Gi
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
           volumeMounts:
             - name: opensearch-data
               mountPath: /usr/share/opensearch/data
@@ -58,6 +89,7 @@ spec:
         name: opensearch-data
       spec:
         accessModes: [ReadWriteOnce]
+        storageClassName: longhorn
         resources:
           requests:
             storage: 20Gi

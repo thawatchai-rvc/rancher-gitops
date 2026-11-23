@@ -5,6 +5,7 @@ metadata:
   namespace: graylog
 spec:
   accessModes: [ReadWriteOnce]
+  storageClassName: longhorn
   resources:
     requests:
       storage: 10Gi
