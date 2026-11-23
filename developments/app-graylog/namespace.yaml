@@ -1,7 +1,0 @@
-# Graylog Open lab on RKE2 / Rancher-managed Kubernetes (not production HA)
-# Create graylog-auth Secret separately before applying this file.
-# Replace GRAYLOG_HTTP_EXTERNAL_URI with your reachable Node IP/DNS URL.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: graylog
