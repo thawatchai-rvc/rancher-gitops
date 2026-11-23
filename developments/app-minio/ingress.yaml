@@ -1,0 +1,40 @@
+# MinIO Ingress
+# - minio.lab.local      → Console UI  (port 9001)
+# - minio-api.lab.local  → S3 API      (port 9000)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: minio
+  annotations:
+    # เพิ่ม buffer size เพราะ MinIO Console ใช้ header ขนาดใหญ่
+    traefik.ingress.kubernetes.io/router.middlewares: ""
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - minio.lab.local
+        - minio-api.lab.local
+      secretName: lab-tls
+  rules:
+    - host: minio.lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-console
+                port:
+                  number: 9001
+    - host: minio-api.lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-api
+                port:
+                  number: 9000
