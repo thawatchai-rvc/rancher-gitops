@@ -8,10 +8,9 @@ metadata:
   namespace: minio
   annotations:
     # เพิ่ม buffer size เพราะ MinIO Console ใช้ header ขนาดใหญ่
-    traefik.ingress.kubernetes.io/router.middlewares: ""
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
   rules:
     - host: minio.lab.local
       http:

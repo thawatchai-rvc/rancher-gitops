@@ -5,7 +5,7 @@ metadata:
   namespace: web-hello
 
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
 
   rules:
     - host: web-hello.lab.local
