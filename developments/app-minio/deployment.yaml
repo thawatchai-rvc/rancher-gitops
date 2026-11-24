@@ -17,9 +17,16 @@ spec:
       labels:
         app: minio
     spec:
+      # image นี้รันด้วย user 65532 (nonroot) — ต้องให้ PVC /data เขียนได้
+      securityContext:
+        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: minio
-          image: quay.io/minio/minio:RELEASE.2024-12-18T21-17-56Z
+          # Image ทางการของ MinIO (quay.io/minio/minio, docker.io/minio/minio) ถูกถอดออก
+          # ตั้งแต่ ต.ค. 2025 จึงใช้ Chainguard build ซึ่ง build จาก source เหมือนกัน
+          # และยังอัปเดต security patch ทุกวัน — entrypoint ยังเป็น binary minio เหมือนเดิม
+          image: cgr.dev/chainguard/minio:latest
           args:
             - server
             - /data
