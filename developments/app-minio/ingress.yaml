@@ -12,11 +12,6 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - minio.lab.local
-        - minio-api.lab.local
-      secretName: lab-tls
   rules:
     - host: minio.lab.local
       http:
