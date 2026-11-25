@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-data
+  namespace: web-todolist
+spec:
+  accessModes: [ReadWriteOnce]
+  # longhorn-ha = numberOfReplicas 2 → ข้อมูล DB มี 2 สำเนา 2 node
+  storageClassName: longhorn-ha
+  resources:
+    requests:
+      storage: 5Gi
