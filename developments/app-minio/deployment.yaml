@@ -24,7 +24,7 @@ spec:
       containers:
         - name: minio
           # image: cgr.dev/chainguard/minio:latest
-          image: minio/minio:latest
+          image: myminio:minio
           args:
             - server
             - /data
