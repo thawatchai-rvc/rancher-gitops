@@ -43,7 +43,7 @@ spec:
             - name: VIKUNJA_FILES_TYPE
               value: s3
             - name: VIKUNJA_FILES_S3_ENDPOINT
-              value: http://minio.minio.svc:9000
+              value: http://minio-api.minio.svc:9000
             - name: VIKUNJA_FILES_S3_BUCKET
               value: vikunja
             # MinIO ไม่ใช้ region แต่ S3 SDK บังคับต้องมีค่า → ใส่ค่าตายตัว
