@@ -65,4 +65,4 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: todolist-data
+            claimName: todolist-data-ha
