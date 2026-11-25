@@ -6,11 +6,9 @@ metadata:
   labels:
     app: web-todolist
 spec:
-  # SQLite + RWO PVC = ต้องมี 1 replica เท่านั้น (multi-attach + เขียนทับกัน)
-  replicas: 1
+  # stateless — ไม่มี PVC ติด pod จึงวางได้ทุก node
+  replicas: 2
   revisionHistoryLimit: 0
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: web-todolist
@@ -19,10 +17,6 @@ spec:
       labels:
         app: web-todolist
     spec:
-      securityContext:
-        # image รันเป็น user 1000 — ให้ volume เขียนได้
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: vikunja
           image: vikunja/vikunja:2.8
@@ -31,18 +25,44 @@ spec:
           env:
             - name: VIKUNJA_SERVICE_PUBLICURL
               value: https://todolist.lab.local/
-            - name: VIKUNJA_DATABASE_PATH
-              value: /data/vikunja.db
-            - name: VIKUNJA_FILES_BASEPATH
-              value: /data/files
+            # --- Pattern 1: DB แยก (PostgreSQL) ---
+            - name: VIKUNJA_DATABASE_TYPE
+              value: postgres
+            - name: VIKUNJA_DATABASE_HOST
+              value: db.web-todolist.svc
+            - name: VIKUNJA_DATABASE_USER
+              value: vikunja
+            - name: VIKUNJA_DATABASE_DATABASE
+              value: vikunja
+            - name: VIKUNJA_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vikunja-secret
+                  key: POSTGRES_PASSWORD
+            # --- Pattern 1: ไฟล์แนบผ่าน MinIO (S3) ---
+            - name: VIKUNJA_FILES_TYPE
+              value: s3
+            - name: VIKUNJA_FILES_S3_ENDPOINT
+              value: http://minio.minio.svc:9000
+            - name: VIKUNJA_FILES_S3_BUCKET
+              value: vikunja
+            - name: VIKUNJA_FILES_S3_USEPATHSTYLE
+              value: "true"
+            - name: VIKUNJA_FILES_S3_ACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: vikunja-secret
+                  key: VIKUNJA_FILES_S3_ACCESSKEY
+            - name: VIKUNJA_FILES_S3_SECRETKEY
+              valueFrom:
+                secretKeyRef:
+                  name: vikunja-secret
+                  key: VIKUNJA_FILES_S3_SECRETKEY
             - name: VIKUNJA_SERVICE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
                   key: VIKUNJA_SERVICE_SECRET
-          volumeMounts:
-            - name: data
-              mountPath: /data
           resources:
             requests:
               cpu: 50m
@@ -62,7 +82,4 @@ spec:
               port: 3456
             initialDelaySeconds: 15
             periodSeconds: 30
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: todolist-data-ha
+      # stateless: ไม่มี volumes — ข้อมูลอยู่ที่ PostgreSQL + MinIO
