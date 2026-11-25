@@ -23,8 +23,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: minio
-          # image: cgr.dev/chainguard/minio:latest
-          image: myminio:minio
+          image: cgr.dev/chainguard/minio:latest
           args:
             - server
             - /data
