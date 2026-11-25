@@ -46,6 +46,9 @@ spec:
               value: http://minio.minio.svc:9000
             - name: VIKUNJA_FILES_S3_BUCKET
               value: vikunja
+            # MinIO ไม่ใช้ region แต่ S3 SDK บังคับต้องมีค่า → ใส่ค่าตายตัว
+            - name: VIKUNJA_FILES_S3_REGION
+              value: us-east-1
             - name: VIKUNJA_FILES_S3_USEPATHSTYLE
               value: "true"
             - name: VIKUNJA_FILES_S3_ACCESSKEY
