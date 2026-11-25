@@ -23,10 +23,8 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: minio
-          # Image ทางการของ MinIO (quay.io/minio/minio, docker.io/minio/minio) ถูกถอดออก
-          # ตั้งแต่ ต.ค. 2025 จึงใช้ Chainguard build ซึ่ง build จาก source เหมือนกัน
-          # และยังอัปเดต security patch ทุกวัน — entrypoint ยังเป็น binary minio เหมือนเดิม
-          image: cgr.dev/chainguard/minio:latest
+          # image: cgr.dev/chainguard/minio:latest
+          image: quay.io/minio/minio
           args:
             - server
             - /data
