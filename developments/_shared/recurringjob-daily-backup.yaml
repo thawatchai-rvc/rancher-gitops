@@ -1,0 +1,16 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: daily-backup
+  namespace: longhorn-system
+spec:
+  name: daily-backup
+  # ทุกวัน 02:00 (ตรงกับ schedule pg_dump เดิม)
+  cron: "0 2 * * *"
+  # backup = snapshot แล้วส่งไป backup target (S3/MinIO)
+  task: backup
+  # เก็บ 7 ชุดล่าสุด (ชุดเก่ากว่าถูกลบอัตโนมัติ)
+  retain: 7
+  # volume ที่อยู่ใน group default (ค่า default ของทุก volume) จะถูก backup
+  groups:
+    - default
