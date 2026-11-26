@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data-ha
+  namespace: minio
+spec:
+  accessModes: [ReadWriteOnce]
+  # longhorn-ha = numberOfReplicas 2 (สร้างโดย app-web-todolist) → ข้อมูล MinIO มี 2 สำเนา 2 node
+  storageClassName: longhorn-ha
+  resources:
+    requests:
+      storage: 20Gi
