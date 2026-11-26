@@ -1,0 +1,9 @@
+apiVersion: longhorn.io/v1beta2
+kind: Setting
+metadata:
+  name: backup-target
+  namespace: longhorn-system
+spec:
+  # ค่าว่าง — backup target จริงไปตั้งที่ BackupTarget CR (backuptarget-default.yaml) แล้ว
+  # webhook ของ Longhorn บังคับว่า setting นี้ห้ามลบ จึงต้องอยู่ใน repo เสมอ
+  value: ""
