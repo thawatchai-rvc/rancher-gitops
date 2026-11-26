@@ -24,7 +24,7 @@ spec:
               args:
                 - |
                   set -e                          # หยุดทันทีถ้าคำสั่งไหนล้มเหลว
-                  apk add --no-cache minio-client # mc = MinIO client (Alpine community)
+                  apk add --no-cache minio-client # Alpine ติดตั้ง binary ชื่อ mcli (ไม่ใช่ mc)
 
                   # 1) dump PostgreSQL (custom format = บีบอัด + restore เลือกได้)
                   export PGPASSWORD="$POSTGRES_PASSWORD"
@@ -32,16 +32,16 @@ spec:
                   echo "DUMP_OK size=$(du -h /tmp/backup.dump | cut -f1)"
 
                   # 2) ต่อ MinIO แล้วอัปโหลด
-                  mc alias set local \
+                  mcli alias set local \
                     http://minio-api.minio.svc:9000 \
                     "$S3_ACCESSKEY" "$S3_SECRETKEY" --api s3v4
-                  mc mb --ignore-existing local/pgbackup
+                  mcli mb --ignore-existing local/pgbackup
                   FILE="vikunja-$(date +%Y%m%d-%H%M%S).dump"
-                  mc cp /tmp/backup.dump "local/pgbackup/$FILE"
+                  mcli cp /tmp/backup.dump "local/pgbackup/$FILE"
                   echo "UPLOAD_OK $FILE"
 
                   # 3) เก็บย้อนหลัง 7 วัน (rotate อัตโนมัติ)
-                  mc rm --recursive --older-than 7 local/pgbackup/
+                  mcli rm --recursive --older-than 7 local/pgbackup/
                   echo "ROTATE_OK"
               env:
                 - name: POSTGRES_PASSWORD
