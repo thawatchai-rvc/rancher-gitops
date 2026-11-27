@@ -13,7 +13,8 @@ data:
 
     DB_CONF = {
         "host": os.environ.get("DB_HOST", "db.web-crud.svc"),
-        "port": int(os.environ.get("DB_PORT", "5432")),
+        # ห้ามใช้ชื่อ DB_PORT — K8s inject env "DB_PORT" จาก service "db" (ค่า tcp://IP:PORT)
+        "port": int(os.environ.get("POSTGRES_PORT", "5432")),
         "user": os.environ.get("DB_USER", "crud"),
         "password": os.environ.get("POSTGRES_PASSWORD", ""),
         "dbname": os.environ.get("DB_NAME", "crud"),
