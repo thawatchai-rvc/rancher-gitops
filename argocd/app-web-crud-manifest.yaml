@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-crud
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/thawatchai-rvc/rancher-gitops.git
+    targetRevision: HEAD
+    path: developments/app-web-crud
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: web-crud
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

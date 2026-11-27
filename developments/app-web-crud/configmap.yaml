@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crud-app
+  namespace: web-crud
+data:
+  app.py: |
+    import os
+    import psycopg2
+    from flask import Flask, request, render_template_string, redirect, url_for, g
+
+    app = Flask(__name__)
+
+    DB_CONF = {
+        "host": os.environ.get("DB_HOST", "db.web-crud.svc"),
+        "port": int(os.environ.get("DB_PORT", "5432")),
+        "user": os.environ.get("DB_USER", "crud"),
+        "password": os.environ.get("POSTGRES_PASSWORD", ""),
+        "dbname": os.environ.get("DB_NAME", "crud"),
+    }
+
+    def get_db():
+        if "db" not in g:
+            g.db = psycopg2.connect(**DB_CONF)
+            g.db.autocommit = False
+        return g.db
+
+    @app.teardown_appcontext
+    def close_db(exc):
+        db = g.pop("db", None)
+        if db is not None:
+            db.close()
+
+    def init_db():
+        db = psycopg2.connect(**DB_CONF)
+        db.autocommit = True
+        with db.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS notes (
+                    id SERIAL PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    content TEXT NOT NULL DEFAULT '',
+                    created_at TIMESTAMP NOT NULL DEFAULT now()
+                )
+            """)
+        db.close()
+
+    LIST_HTML = """
+    <!doctype html>
+    <html lang="th">
+    <head>
+      <meta charset="utf-8">
+      <title>Notes CRUD</title>
+      <style>
+        body { font-family: sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+        h1 { color: #2c5282; }
+        form.add { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+        input, textarea { flex: 1; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        textarea { width: 100%; box-sizing: border-box; }
+        button { padding: .5rem 1rem; border: 0; border-radius: 4px; background: #2c5282; color: #fff; cursor: pointer; }
+        button:hover { background: #2b6cb0; }
+        .note { border: 1px solid #ddd; border-radius: 6px; padding: .75rem 1rem; margin-bottom: .75rem; }
+        .note h3 { margin: 0 0 .25rem; display: inline-block; }
+        .meta { color: #888; font-size: .8rem; float: right; }
+        .actions { margin-top: .5rem; display: flex; gap: .5rem; }
+        .del { background: #c53030; }
+        .del:hover { background: #9b2c2c; }
+        .edit { background: #2f855a; }
+        .edit:hover { background: #276749; }
+        form.inline { display: inline; }
+        textarea { margin-top: .5rem; }
+      </style>
+    </head>
+    <body>
+      <h1>📝 Notes (CRUD Demo)</h1>
+      <form class="add" method="post" action="/create">
+        <input name="title" placeholder="หัวข้อ" required>
+        <button type="submit">+ เพิ่ม</button>
+      </form>
+
+      {% for note in notes %}
+      <div class="note">
+        <span class="meta">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        <h3>{{ note.title }}</h3>
+        {% if note.content %}<p>{{ note.content }}</p>{% endif %}
+        <div class="actions">
+          <form class="inline" method="post" action="/delete/{{ note.id }}"
+                onsubmit="return confirm('ลบโน้ตนี้?')">
+            <button class="del" type="submit">ลบ</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <p>ยังไม่มีโน้ต — เพิ่มได้จากช่องด้านบน</p>
+      {% endfor %}
+
+      <h2>แก้ไข</h2>
+      {% for note in notes %}
+      <div class="note">
+        <form method="post" action="/update/{{ note.id }}">
+          <input name="title" value="{{ note.title }}" required>
+          <textarea name="content" rows="2">{{ note.content }}</textarea>
+          <div class="actions"><button class="edit" type="submit">บันทึก</button></div>
+        </form>
+      </div>
+      {% else %}
+      <p>ไม่มีให้แก้</p>
+      {% endfor %}
+    </body>
+    </html>
+    """
+
+    @app.route("/")
+    def index():
+        db = get_db()
+        with db.cursor() as cur:
+            cur.execute("SELECT id, title, content, created_at FROM notes ORDER BY id DESC")
+            notes = cur.fetchall()
+        cols = ["id", "title", "content", "created_at"]
+        rows = [dict(zip(cols, r)) for r in notes]
+        return render_template_string(LIST_HTML, notes=rows)
+
+    @app.route("/create", methods=["POST"])
+    def create():
+        title = (request.form.get("title") or "").strip()
+        if title:
+            db = get_db()
+            with db.cursor() as cur:
+                cur.execute("INSERT INTO notes (title) VALUES (%s)", (title,))
+            db.commit()
+        return redirect(url_for("index"))
+
+    @app.route("/update/<int:note_id>", methods=["POST"])
+    def update(note_id):
+        title = (request.form.get("title") or "").strip()
+        content = (request.form.get("content") or "").strip()
+        db = get_db()
+        with db.cursor() as cur:
+            cur.execute("UPDATE notes SET title=%s, content=%s WHERE id=%s",
+                        (title, content, note_id))
+        db.commit()
+        return redirect(url_for("index"))
+
+    @app.route("/delete/<int:note_id>", methods=["POST"])
+    def delete(note_id):
+        db = get_db()
+        with db.cursor() as cur:
+            cur.execute("DELETE FROM notes WHERE id=%s", (note_id,))
+        db.commit()
+        return redirect(url_for("index"))
+
+    if __name__ == "__main__":
+        init_db()
+        app.run(host="0.0.0.0", port=5000)
