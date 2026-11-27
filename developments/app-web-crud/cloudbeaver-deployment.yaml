@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudbeaver
+  namespace: web-crud
+  labels:
+    app: cloudbeaver
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: cloudbeaver
+  template:
+    metadata:
+      labels:
+        app: cloudbeaver
+    spec:
+      containers:
+        - name: cloudbeaver
+          image: dbeaver/cloudbeaver:26.2.5
+          ports:
+            - containerPort: 8978
+          env:
+            # รหัส admin (username: cfadm) — เปลี่ยนได้ที่นี่
+            - name: CB_ADMIN_PASSWORD
+              value: CloudBeaver1!
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8978
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8978
+            initialDelaySeconds: 60
+            periodSeconds: 30

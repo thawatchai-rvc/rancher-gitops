@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: adminer
+  name: cloudbeaver
   namespace: web-crud
   labels:
-    app: adminer
+    app: cloudbeaver
 spec:
   type: ClusterIP
   selector:
-    app: adminer
+    app: cloudbeaver
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 8978
+      targetPort: 8978
       protocol: TCP
